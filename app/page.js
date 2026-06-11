@@ -77,7 +77,7 @@ export default function Home() {
             {/* Main Meeting Image */}
             <div className="relative z-10">
               <Image
-                src="/images/main-bg.png"
+                src="/images/main-bg1.png"
                 alt="Video Conference Meeting"
                 width={700}
                 height={500}
