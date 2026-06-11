@@ -59,14 +59,14 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 mt-10">
               {/* Start Meeting */}
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition">
-                🎥 Start a Meeting for Free
-              </button>
-
-              {/* Join Meeting */}
-              <button className="border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-8 py-4 rounded-xl font-semibold transition">
-                👥 Join a Meeting
-              </button>
+             <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition">
+  <img src="/icons/camera.png" alt="Gallery" className="w-5 h-5" />
+  Start a Meeting for Free
+</button>
+<button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition">
+  <img src="/icons/user.png" alt="Gallery" className="w-5 h-5" />
+  Join a Meeting
+</button>
             </div>
           </div>
 
