@@ -23,10 +23,6 @@ export default function Home() {
         className="object-contain"
       />
     </div>
-
-    <span className="text-sm sm:text-xl font-semibold md:pb-2  text-gray-900 whitespace-nowrap">
-      Microsoft Teams
-    </span>
   </div>
 
   {/* Right */}
