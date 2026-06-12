@@ -8,37 +8,41 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-linear-to-br from-gray-300 to-gray-200">
+    <main className="min-h-screen bg-linear-to-br from-gray-200 to-gray-200">
       {/* Header */}
-      <header className="container mx-auto px-6 py-5">
-        <nav className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <Image
-              src="/images/logo.png"
-              alt="Company Logo"
-              width={100}
-              height={100}
-              priority
-            />
-            <span className="text-xl font-semibold text-gray-900">
-              Microsoft Teams
-            </span>
-          </div>
+    <nav className="flex items-center justify-between bg-white px-4 sm:px-6 h-16 shadow-sm">
+  {/* Left */}
+  <div className="flex items-center gap-2">
+    <div className="w-10 h-10 sm:w-16 sm:h-16 flex items-center justify-center overflow-hidden">
+      <Image
+        src="/images/logo.png"
+        alt="Company Logo"
+        width={90}
+        height={90}
+        priority
+        className="object-contain"
+      />
+    </div>
 
-          {/* Right Buttons */}
-          <div className="flex items-center gap-4">
-            <button className="text-indigo-600 font-medium hover:text-indigo-700 transition">
-              Sign in
-            </button>
+    <span className="text-sm sm:text-xl font-semibold md:pb-2  text-gray-900 whitespace-nowrap">
+      Microsoft Teams
+    </span>
+  </div>
 
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-medium transition">
-              Sign up
-            </button>
-          </div>
-        </nav>
-      </header>
+  {/* Right */}
+  <div className="flex items-center gap-2 sm:gap-4">
+    <button className="text-indigo-800 text-sm sm:text-base font-medium hover:text-indigo-700 transition whitespace-nowrap">
+      Sign in
+    </button>
 
+    {/* Divider */}
+    <div className="hidden sm:block h-6 w-px bg-gray-300"></div>
+
+    <button className="bg-indigo-800 hover:bg-indigo-700 text-white text-sm sm:text-base px-3 sm:px-6 py-2 rounded-lg sm:rounded-xl font-medium transition whitespace-nowrap">
+      Sign up
+    </button>
+  </div>
+</nav>
       {/* Hero Section */}
       <section className="container mx-auto px-6 py-12 lg:py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -47,7 +51,7 @@ export default function Home() {
             <h1 className="text-5xl md:text-6xl font-bold leading-tight text-gray-900">
               Meet, Chat, and
               <br />
-              <span className="text-indigo-600">Collaborate</span>
+              <span className="text-indigo-800">Collaborate</span>
               <br />
               Anywhere
             </h1>
@@ -59,14 +63,17 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 mt-10">
               {/* Start Meeting */}
-             <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition">
-  <img src="/icons/camera.png" alt="Gallery" className="w-5 h-5" />
-  Start a Meeting for Free
-</button>
-<button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition">
-  <img src="/icons/user.png" alt="Gallery" className="w-5 h-5" />
-  Join a Meeting
-</button>
+           <div className="flex flex-col gap-4">
+  <button className="flex items-center justify-center gap-2 bg-indigo-800 hover:bg-indigo-900 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition">
+    <img src="/icons/video.png" alt="Video" className="w-5 h-5" />
+    Start a Meeting for Free
+  </button>
+
+  <button className="flex items-center justify-center gap-2 bg-white border-2 border-indigo-800 hover:bg-indigo-50 text-indigo-800 px-8 py-4 rounded-xl font-semibold shadow-lg transition">
+    <img src="/icons/user.png" alt="User" className="w-5 h-5" />
+    Join a Meeting
+  </button>
+</div>
             </div>
           </div>
 
