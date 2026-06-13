@@ -1,5 +1,5 @@
 import Image from "next/image";
-
+import Link from "next/link";
 export const metadata = {
   title: "Microsoft Teams Clone - Meet, Chat and Collaborate",
   description:
@@ -26,18 +26,24 @@ export default function Home() {
   </div>
 
   {/* Right */}
-  <div className="flex items-center gap-2 sm:gap-4">
-    <button className="text-indigo-800 text-sm sm:text-base font-medium hover:text-indigo-700 transition whitespace-nowrap">
+ <div className="flex items-center gap-2 sm:gap-4">
+
+  <Link href="/sign-in">
+    <span className="text-indigo-800 text-sm sm:text-base font-medium hover:text-indigo-700 transition whitespace-nowrap cursor-pointer">
       Sign in
-    </button>
+    </span>
+  </Link>
 
-    {/* Divider */}
-    <div className="hidden sm:block h-6 w-px bg-gray-300"></div>
+  {/* Divider */}
+  <div className="hidden sm:block h-6 w-px bg-gray-300"></div>
 
-    <button className="bg-indigo-800 hover:bg-indigo-700 text-white text-sm sm:text-base px-3 sm:px-6 py-2 rounded-lg sm:rounded-xl font-medium transition whitespace-nowrap">
+  <Link href="/sign-up">
+    <span className="bg-indigo-800 hover:bg-indigo-700 text-white text-sm sm:text-base px-3 sm:px-6 py-2 rounded-lg sm:rounded-xl font-medium transition whitespace-nowrap inline-block cursor-pointer">
       Sign up
-    </button>
-  </div>
+    </span>
+  </Link>
+
+</div>
 </nav>
       {/* Hero Section */}
       <section className="container mx-auto px-6 py-12 lg:py-20">
