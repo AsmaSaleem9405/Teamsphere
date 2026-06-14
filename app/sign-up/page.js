@@ -5,7 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
+import TermsPage from "@/app/terms/page";
+import PrivacyPage from "@/app/privacy/page";
 import Logo from "@/app/components/logo";
 import { supabase } from "@/app/lib/supabase/client";
 import { signUp } from "@/app/lib/supabase/auth";
@@ -209,17 +210,32 @@ export default function SignUpPage() {
 
         {/* Terms */}
         <div className="flex items-start gap-2 mb-6">
-          <input
-            type="checkbox"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
-            className="mt-1"
-          />
+  <input
+    type="checkbox"
+    checked={agree}
+    onChange={(e) => setAgree(e.target.checked)}
+    className="mt-1"
+  />
 
-          <p className="text-sm text-gray-500">
-            I agree to Terms of Service and Privacy Policy
-          </p>
-        </div>
+  <p className="text-sm text-gray-500">
+    I agree to{" "}
+    <Link
+      href="/terms"
+      className="text-blue-600 hover:text-blue-700 underline"
+      target="_blank"
+    >
+      Terms of Service
+    </Link>{" "}
+    and{" "}
+    <Link
+      href="/privacy"
+      className="text-blue-600 hover:text-blue-700 underline"
+      target="_blank"
+    >
+      Privacy Policy
+    </Link>
+  </p>
+</div>
 
         {/* Create Account */}
         <button
@@ -242,7 +258,7 @@ export default function SignUpPage() {
         <button
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
-          className="w-full h-12 border border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
+          className="w-full h-12 border text-black border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
         >
           <Image src="/icons/google.png" alt="Google" width={20} height={20} />
 
