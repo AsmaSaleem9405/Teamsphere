@@ -58,26 +58,30 @@ export default function SignInPage() {
       setLoading(false);
     }
   };
+const googleLogin = async () => {
+  try {
+    // 🔥 FORCE CLEAR SUPABASE SESSION FIRST
+    await supabase.auth.signOut();
 
-  const googleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo:
-          `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          prompt: "select_account consent",
+          access_type: "offline",
+        },
       },
     });
-  };
 
-  const microsoftLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "azure",
-      options: {
-        redirectTo:
-          `${window.location.origin}/dashboard`,
-      },
-    });
-  };
+    if (error) {
+      console.log(error.message);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-5">
@@ -211,18 +215,7 @@ export default function SignInPage() {
             Google
           </button>
 
-          <button
-            onClick={microsoftLogin}
-            className="border border-gray-300 text-gray-700 rounded-xl py-3 flex justify-center items-center gap-3 hover:bg-gray-50"
-          >
-            <Image
-              src="/icons/microsoft.png"
-              alt="Microsoft"
-              width={20}
-              height={20}
-            />
-            Microsoft
-          </button>
+         
 
         </div>
 

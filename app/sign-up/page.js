@@ -7,12 +7,8 @@ import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import Logo from "@/app/components/logo";
-
-import {
-  signUp,
-  signInWithGoogle,
-  signInWithMicrosoft,
-} from "@/app/lib/supabase/auth";
+import { supabase } from "@/app/lib/supabase/client";
+import { signUp } from "@/app/lib/supabase/auth";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -20,18 +16,16 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [agree, setAgree] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const [error, setError] = useState("");
 
   const register = async () => {
@@ -52,38 +46,63 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!agree) {
-      setError(
-        "Please accept Terms of Service and Privacy Policy"
-      );
-      return;
-    }
-
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    setLoading(true);
-
-    const { error } = await signUp(
-      email,
-      password,
-      fullName
-    );
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
+    if (!agree) {
+      setError("Please accept Terms of Service and Privacy Policy");
       return;
     }
 
-    alert(
-      "Account created successfully. Please verify your email."
-    );
+    try {
+      setLoading(true);
 
-    router.push("/sign-in");
+      const { error } = await signUp(email, password, fullName);
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      alert("Account created successfully. Please verify your email.");
+      router.push("/sign-in");
+    } catch (err) {
+      setError(err?.message || "Failed to create account");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ FIXED GOOGLE LOGIN (IMPORTANT PART)
+  const handleGoogleSignIn = async () => {
+    try {
+      setError("");
+      setGoogleLoading(true);
+
+      // 🔥 FORCE LOGOUT FIRST
+      await supabase.auth.signOut();
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            prompt: "select_account consent",
+            access_type: "offline",
+          },
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+      }
+    } catch (err) {
+      setError(err?.message || "Google sign in failed");
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -118,11 +137,8 @@ export default function SignUpPage() {
 
           <input
             type="text"
-            placeholder="John Doe"
             value={fullName}
-            onChange={(e) =>
-              setFullName(e.target.value)
-            }
+            onChange={(e) => setFullName(e.target.value)}
             className="w-full h-12 border border-gray-300 rounded-xl text-gray-900 px-4 outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -135,11 +151,8 @@ export default function SignUpPage() {
 
           <input
             type="email"
-            placeholder="you@example.com"
             value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full h-12 border border-gray-300 rounded-xl text-gray-900 px-4 outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
@@ -152,29 +165,18 @@ export default function SignUpPage() {
 
           <div className="relative">
             <input
-              type={
-                showPassword ? "text" : "password"
-              }
-              placeholder="********"
+              type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full h-12 border border-gray-300 rounded-xl text-gray-900 px-4 pr-12 outline-none focus:ring-2 focus:ring-indigo-500"
             />
 
             <button
               type="button"
-              onClick={() =>
-                setShowPassword(!showPassword)
-              }
+              onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2"
             >
-              {showPassword ? (
-                <FaEyeSlash className="text-indigo-600" />
-              ) : (
-                <FaEye className="text-gray-400" />
-              )}
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
         </div>
@@ -187,35 +189,20 @@ export default function SignUpPage() {
 
           <div className="relative">
             <input
-              type={
-                showConfirmPassword
-                  ? "text"
-                  : "password"
-              }
-              placeholder="********"
+              type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
-              onChange={(e) =>
-                setConfirmPassword(
-                  e.target.value
-                )
-              }
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full h-12 border border-gray-300 rounded-xl text-gray-900 px-4 pr-12 outline-none focus:ring-2 focus:ring-indigo-500"
             />
 
             <button
               type="button"
               onClick={() =>
-                setShowConfirmPassword(
-                  !showConfirmPassword
-                )
+                setShowConfirmPassword(!showConfirmPassword)
               }
               className="absolute right-4 top-1/2 -translate-y-1/2"
             >
-              {showConfirmPassword ? (
-                <FaEyeSlash className="text-indigo-600" />
-              ) : (
-                <FaEye className="text-gray-400" />
-              )}
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
         </div>
@@ -225,27 +212,12 @@ export default function SignUpPage() {
           <input
             type="checkbox"
             checked={agree}
-            onChange={(e) =>
-              setAgree(e.target.checked)
-            }
+            onChange={(e) => setAgree(e.target.checked)}
             className="mt-1"
           />
 
           <p className="text-sm text-gray-500">
-            I agree to the{" "}
-            <Link
-              href="/terms"
-              className="text-indigo-600"
-            >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="text-indigo-600"
-            >
-              Privacy Policy
-            </Link>
+            I agree to Terms of Service and Privacy Policy
           </p>
         </div>
 
@@ -253,74 +225,39 @@ export default function SignUpPage() {
         <button
           onClick={register}
           disabled={loading}
-          className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition"
+          className="w-full h-12 rounded-xl bg-indigo-600 text-white font-medium"
         >
-          {loading
-            ? "Creating Account..."
-            : "Create account"}
+          {loading ? "Creating Account..." : "Create account"}
         </button>
 
         {/* Divider */}
         <div className="relative my-8">
           <div className="border-t" />
-
           <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-4 text-sm text-gray-500">
             or continue with
           </span>
         </div>
 
-        {/* Social Login */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Google */}
+        <button
+          onClick={handleGoogleSignIn}
+          disabled={googleLoading}
+          className="w-full h-12 border border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
+        >
+          <Image src="/icons/google.png" alt="Google" width={20} height={20} />
 
-          <button
-            onClick={async () =>
-              await signInWithGoogle()
-            }
-            className="h-12 border border-gray-300 text-gray-700 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
-          >
-            <Image
-              src="/icons/google.png"
-              alt="Google"
-              width={20}
-              height={20}
-            />
+          <span className="text-sm font-medium">
+            {googleLoading ? "Redirecting..." : "Google"}
+          </span>
+        </button>
 
-            <span className="text-sm font-medium">
-              Google
-            </span>
-          </button>
-
-          <button
-            onClick={async () =>
-              await signInWithMicrosoft()
-            }
-            className="h-12 border border-gray-300 text-gray-700 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
-          >
-            <Image
-              src="/icons/microsoft.png"
-              alt="Microsoft"
-              width={20}
-              height={20}
-            />
-
-            <span className="text-sm font-medium">
-              Microsoft
-            </span>
-          </button>
-
-        </div>
-
-        {/* Sign In */}
+        {/* Sign in */}
         <p className="text-center text-sm text-gray-500 mt-8">
           Already have an account?{" "}
-          <Link
-            href="/sign-in"
-            className="font-semibold text-indigo-600 hover:text-indigo-700"
-          >
+          <Link href="/sign-in" className="text-indigo-600 font-semibold">
             Sign in
           </Link>
         </p>
-
       </div>
     </div>
   );

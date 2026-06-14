@@ -21,9 +21,3 @@ export const signInWithGoogle = async () => {
     provider: "google",
   });
 };
-
-export const signInWithMicrosoft = async () => {
-  return await supabase.auth.signInWithOAuth({
-    provider: "azure",
-  });
-};
