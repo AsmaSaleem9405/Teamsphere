@@ -66,15 +66,19 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 mt-10">
               {/* Start Meeting */}
            <div className="flex flex-col gap-4">
-  <button className="flex items-center justify-center gap-2 bg-indigo-800 hover:bg-indigo-900 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition">
-    <img src="/icons/video.png" alt="Video" className="w-5 h-5" />
-    Start a Meeting for Free
+ <Link href="/meeting">
+  <button className="bg-indigo-600 text-white px-6 py-3 rounded-lg">
+    Start a New Meeting
   </button>
+</Link>
 
-  <button className="flex items-center justify-center gap-2 bg-white border-2 border-indigo-800 hover:bg-indigo-50 text-indigo-800 px-8 py-4 rounded-xl font-semibold shadow-lg transition">
-    <img src="/icons/user.png" alt="User" className="w-5 h-5" />
-    Join a Meeting
-  </button>
+   <Link href="/meeting">
+
+        <button className="bg-indigo-600 text-white px-8 py-4 rounded-lg">
+          Start New Meeting
+        </button>
+
+      </Link>
 </div>
             </div>
           </div>
