@@ -169,10 +169,12 @@ const googleLogin = async () => {
     <input type="checkbox" />
     Remember me
   </label>
+<div className="text-blue-600 underline">
 
 <Link href="/forgot-password">
   Forgot password?
 </Link>
+</div>
 </div>
 
         {/* Login Button */}

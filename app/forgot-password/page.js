@@ -33,8 +33,8 @@ export default function ForgotPassword() {
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white p-6 rounded shadow w-96">
 
-        <h1 className="text-xl font-bold mb-4">
-          Forgot Password
+        <h1 className="text-xl text-black font-bold mb-4">
+          Forgot Password?
         </h1>
 
         <input
@@ -42,7 +42,7 @@ export default function ForgotPassword() {
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-3 rounded mb-3"
+          className="w-full text-gray-400 border p-3 rounded mb-3"
         />
 
         <button
