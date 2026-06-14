@@ -163,19 +163,17 @@ const googleLogin = async () => {
         </div>
 
         {/* Remember */}
-        <div className="flex justify-between items-center mt-5 mb-7 text-sm">
-          <label className="flex items-center gap-2 text-gray-600">
-            <input type="checkbox" />
-            Remember me
-          </label>
+      {/* Remember */}
+<div className="flex justify-between items-center mt-5 mb-7 text-sm">
+  <label className="flex items-center gap-2 text-gray-600">
+    <input type="checkbox" />
+    Remember me
+  </label>
 
-          <Link
-            href="/forgot-password"
-            className="text-indigo-600 hover:underline"
-          >
-            Forgot password?
-          </Link>
-        </div>
+<Link href="/forgot-password">
+  Forgot password?
+</Link>
+</div>
 
         {/* Login Button */}
         <button
