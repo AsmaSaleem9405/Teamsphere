@@ -59,17 +59,27 @@ export default function SignInPage() {
     }
   };
 const googleLogin = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
-      queryParams: {
-        prompt: "select_account",
-      },
-    },
-  });
+  try {
+    // 🔥 FORCE CLEAR SUPABASE SESSION FIRST
+    await supabase.auth.signOut();
 
-  if (error) console.log(error);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          prompt: "select_account consent",
+          access_type: "offline",
+        },
+      },
+    });
+
+    if (error) {
+      console.log(error.message);
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 
