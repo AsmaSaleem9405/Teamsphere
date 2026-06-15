@@ -38,26 +38,49 @@ export default function SignInPage() {
   }, [router]);
 
   const login = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  try {
+    setLoading(true);
+    setError("");
 
-      const { error } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+    // Check if user exists
+    const res = await fetch("/api/check-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+      }),
+    });
 
-      if (error) throw error;
+    const data = await res.json();
 
-      router.push("/dashboard");
-      router.refresh();
-    } catch (err) {
-  setError(err.message);
-} finally {
-      setLoading(false);
+    if (!data.exists) {
+      setError(
+        "This account is not registered. Please sign up."
+      );
+      return;
     }
-  };
+
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    if (error) {
+      setError("Incorrect password.");
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 const googleLogin = async () => {
   try {
     // 🔥 FORCE CLEAR SUPABASE SESSION FIRST
