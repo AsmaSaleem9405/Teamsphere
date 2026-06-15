@@ -5,7 +5,7 @@ export const signUp = async (
   password: string,
   fullName: string
 ) => {
-  return await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -14,6 +14,20 @@ export const signUp = async (
       },
     },
   });
+
+  if (error) {
+    return { data, error };
+  }
+
+  if (data.user) {
+    await supabase.from("profiles").insert({
+      id: data.user.id,
+      email: email,
+      full_name: fullName,
+    });
+  }
+
+  return { data, error };
 };
 
 export const signInWithGoogle = async () => {

@@ -30,7 +30,26 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
 
   const register = async () => {
-    setError("");
+  setError("");
+
+  try {
+    setLoading(true);
+
+    // Check if email already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (checkError) {
+      console.log(checkError);
+    }
+
+    if (existingUser) {
+      setError("This email is already registered. Please sign in.");
+      return;
+    }
 
     if (!fullName.trim()) {
       setError("Please enter your full name");
@@ -56,26 +75,43 @@ export default function SignUpPage() {
       setError("Please accept Terms of Service and Privacy Policy");
       return;
     }
+const res = await fetch("/api/check-user", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    email,
+  }),
+});
 
-    try {
-      setLoading(true);
+const { exists } = await res.json();
 
-      const { error } = await signUp(email, password, fullName);
+if (exists) {
+  setError(
+    "This email is already registered. Please sign in."
+  );
+  return;
+}
+    const { error } = await signUp(
+      email,
+      password,
+      fullName
+    );
 
-      if (error) {
-        setError(error.message);
-        return;
-      }
-
-      alert("Account created successfully. Please verify your email.");
-      router.push("/sign-in");
-    } catch (err) {
-      setError(err?.message || "Failed to create account");
-    } finally {
-      setLoading(false);
+    if (error) {
+      setError(error.message);
+      return;
     }
-  };
 
+    alert("Account created successfully. Please verify your email.");
+    router.push("/sign-in");
+  } catch (err) {
+    setError(err?.message || "Failed to create account");
+  } finally {
+    setLoading(false);
+  }
+};
   // ✅ FIXED GOOGLE LOGIN (IMPORTANT PART)
   const handleGoogleSignIn = async () => {
     try {
