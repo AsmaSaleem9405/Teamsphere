@@ -45,7 +45,7 @@ export default function ResetPassword() {
 
       // Redirect to login page
       setTimeout(() => {
-        router.replace("/login");
+        router.replace("/sign-in");
       }, 2000);
 
     } catch (error) {
