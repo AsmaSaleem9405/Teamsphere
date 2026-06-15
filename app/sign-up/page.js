@@ -112,6 +112,26 @@ if (exists) {
     setLoading(false);
   }
 };
+
+const facebookLogin = async () => {
+  try {
+    // optional but fine
+    await supabase.auth.signOut();
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.log(error.message);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
   // ✅ FIXED GOOGLE LOGIN (IMPORTANT PART)
   const handleGoogleSignIn = async () => {
     try {
@@ -211,7 +231,7 @@ if (exists) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2"
+              className="absolute right-4 top-1/2 text-indigo-600 -translate-y-1/2"
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
@@ -237,7 +257,7 @@ if (exists) {
               onClick={() =>
                 setShowConfirmPassword(!showConfirmPassword)
               }
-              className="absolute right-4 top-1/2 -translate-y-1/2"
+              className="absolute right-4 top-1/2 text-indigo-600 -translate-y-1/2"
             >
               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
@@ -291,17 +311,32 @@ if (exists) {
         </div>
 
         {/* Google */}
-        <button
-          onClick={handleGoogleSignIn}
-          disabled={googleLoading}
-          className="w-full h-12 border text-black border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
-        >
-          <Image src="/icons/google.png" alt="Google" width={20} height={20} />
+      <div className="grid grid-cols-2 gap-4">
+  <button
+    onClick={handleGoogleSignIn}
+    disabled={googleLoading}
+    className="w-full h-12 border text-black border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
+  >
+    <Image src="/icons/google.png" alt="Google" width={20} height={20} />
 
-          <span className="text-sm font-medium">
-            {googleLoading ? "Redirecting..." : "Google"}
-          </span>
-        </button>
+    <span className="text-sm font-medium">
+      {googleLoading ? "Redirecting..." : "Google"}
+    </span>
+  </button>
+
+  <button
+    onClick={facebookLogin}
+    className="w-full h-12 border border-gray-300 text-gray-700 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
+  >
+    <Image
+      src="/icons/facebook.png"
+      alt="Facebook"
+      width={20}
+      height={20}
+    />
+    <span className="text-sm font-medium">Facebook</span>
+  </button>
+</div>
 
         {/* Sign in */}
         <p className="text-center text-sm text-gray-500 mt-8">

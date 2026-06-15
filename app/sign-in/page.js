@@ -81,6 +81,25 @@ export default function SignInPage() {
     setLoading(false);
   }
 };
+const facebookLogin = async () => {
+  try {
+    // optional but fine
+    await supabase.auth.signOut();
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.log(error.message);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 const googleLogin = async () => {
   try {
     // 🔥 FORCE CLEAR SUPABASE SESSION FIRST
@@ -179,7 +198,7 @@ const googleLogin = async () => {
                 onClick={() =>
                   setShowPassword(true)
                 }
-                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400"
+                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-indigo-600 text-gray-400"
               />
             )}
           </div>
@@ -227,7 +246,7 @@ const googleLogin = async () => {
 
           <button
             onClick={googleLogin}
-            className="border border-gray-300 text-gray-700 rounded-xl py-3 flex justify-center items-center gap-3 hover:bg-gray-50"
+    className="w-full h-12 border text-black border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
           >
             <Image
               src="/icons/google.png"
@@ -238,7 +257,18 @@ const googleLogin = async () => {
             Google
           </button>
 
-         
+         <button
+  onClick={facebookLogin}
+    className="w-full h-12 border text-black border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
+>
+  <Image
+    src="/icons/facebook.png"
+    alt="Facebook"
+    width={20}
+    height={20}
+  />
+  Facebook
+</button>
 
         </div>
 
