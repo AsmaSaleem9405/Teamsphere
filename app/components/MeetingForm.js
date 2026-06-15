@@ -24,9 +24,9 @@ export default function MeetingForm({
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow">
+    <div className="bg-white p-6  text-black rounded-xl shadow">
 
-      <h2 className="font-semibold text-lg mb-6">
+      <h2 className="font-semibold text-black text-lg mb-6">
         Start a Meeting for Free
       </h2>
 
@@ -42,7 +42,7 @@ export default function MeetingForm({
         }
       />
 
-      <div className="mt-6">
+      <div className="mt-6 text-black">
 
         <label>Meeting Type</label>
 

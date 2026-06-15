@@ -21,14 +21,14 @@ export default function Navbar() {
             href="/terms"
             className="text-gray-700 hover:text-blue-600"
           >
-            Terms
+            Terms & Conditions
           </Link>
 
           <Link
             href="/privacy"
             className="text-gray-700 hover:text-blue-600"
           >
-            Privacy
+            Privacy-Policy
           </Link>
         </div>
       </div>

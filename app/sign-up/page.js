@@ -303,12 +303,22 @@ const facebookLogin = async () => {
         </button>
 
         {/* Divider */}
-        <div className="relative my-8">
-          <div className="border-t" />
-          <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-white px-4 text-sm text-gray-500">
-            or continue with
-          </span>
-        </div>
+<div className="relative my-6 sm:my-8">
+  <div className="border-t border-gray-200" />
+
+  <span
+    className="
+      absolute left-1/2 -translate-x-1/2
+      -top-2 sm:-top-3
+      bg-white px-2 sm:px-4
+      text-xs sm:text-sm
+      text-gray-500
+      whitespace-nowrap
+    "
+  >
+    or continue with
+  </span>
+</div>
 
         {/* Google */}
       <div className="grid grid-cols-2 gap-4">

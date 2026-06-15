@@ -1,42 +1,78 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
+import Image from "next/image";
 
-export default function Sidebar() {
+export default function Sidebar({
+  open,
+  setOpen
+}) {
   return (
-    <div className="w-64 bg-white border-r min-h-screen p-4">
+    <>
+      {/* Mobile Overlay */}
 
-      <button className="w-full bg-indigo-600 text-white p-3 rounded-lg">
-        Start a Meeting for Free
-      </button>
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
 
-      <div className="mt-8 space-y-3">
+      <aside
+        className={`
+        fixed lg:static
+        z-50
+        bg-white
+        w-64
+        h-screen
+        border-r
+        transition-all
+        duration-300
+        ${open ? "left-0" : "-left-64"}
+        lg:left-0
+      `}
+      >
+        <div className="p-4">
 
-        <Link href="/">
-          <div className="p-3 hover:bg-gray-100 rounded">
-            Home
+          <button className="w-full bg-indigo-600 text-white py-3 rounded-xl">
+            + Start a Meeting
+          </button>
+
+          <div className="mt-10 space-y-6">
+
+            <SidebarItem icon="home.png" title="Home" />
+            <SidebarItem icon="calendar.png" title="Meetings" />
+            <SidebarItem icon="tag.png" title="Join with ID" />
+            <SidebarItem icon="users.png" title="Contacts" />
+            <SidebarItem icon="chat.png" title="Chat" />
+
           </div>
-        </Link>
 
-        <Link href="/meeting">
-          <div className="p-3 hover:bg-gray-100 rounded">
-            Meetings
+          <div className="mt-10 border-t pt-6">
+
+            <SidebarItem icon="settings.png" title="Settings" />
+            <SidebarItem icon="question.png" title="Help & Support" />
+
           </div>
-        </Link>
 
-        <Link href="/contacts">
-          <div className="p-3 hover:bg-gray-100 rounded">
-            Contacts
-          </div>
-        </Link>
+        </div>
+      </aside>
+    </>
+  );
+}
 
-        <Link href="/chat">
-          <div className="p-3 hover:bg-gray-100 rounded">
-            Chat
-          </div>
-        </Link>
-
-      </div>
+function SidebarItem({
+  icon,
+  title
+}) {
+  return (
+    <div className="flex items-center gap-3 cursor-pointer hover:text-indigo-600">
+      <Image
+        src={`/icons/${icon}`}
+        width={18}
+        height={18}
+        alt=""
+      />
+      <span>{title}</span>
     </div>
-  )
+  );
 }

@@ -126,8 +126,8 @@ const googleLogin = async () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-5">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
+   <div className="min-h-screen flex items-center justify-center bg-gray-100 px-5 py-10 lg:py-16">
+  <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10">
 
         {/* Logo */}
         <Logo />
