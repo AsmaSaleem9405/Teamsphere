@@ -2,15 +2,13 @@
 
 import { useState } from 'react'
 
-export default function MeetingForm({
-  onChange
-}) {
-
+export default function MeetingForm({ onChange }) {
   const [form, setForm] = useState({
     title: 'Team Meeting',
     meeting_type: 'instant',
     privacy: 'public',
-    participants: ''
+    participants: '',
+    scheduled_at: ''
   })
 
   const updateForm = (key, value) => {
@@ -24,8 +22,7 @@ export default function MeetingForm({
   }
 
   return (
-    <div className="bg-white p-6  text-black rounded-xl shadow">
-
+    <div className="bg-white p-4 sm:p-6 text-black rounded-xl shadow w-full">
       <h2 className="font-semibold text-black text-lg mb-6">
         Start a Meeting for Free
       </h2>
@@ -35,27 +32,26 @@ export default function MeetingForm({
       </label>
 
       <input
-        className="w-full border p-3 rounded mt-2"
+        className="w-full border p-3 rounded mt-2 text-sm sm:text-base"
         value={form.title}
-        onChange={(e)=>
+        onChange={(e) =>
           updateForm('title', e.target.value)
         }
       />
 
       <div className="mt-6 text-black">
-
         <label>Meeting Type</label>
 
-        <div className="flex gap-4 mt-2">
-
+        <div className="flex flex-col sm:flex-row gap-4 mt-2">
           <button
-            onClick={()=>
+            type="button"
+            onClick={() =>
               updateForm(
                 'meeting_type',
                 'instant'
               )
             }
-            className={`border p-4 rounded flex-1 ${
+            className={`border p-4 rounded flex-1 transition ${
               form.meeting_type === 'instant'
                 ? 'border-indigo-500'
                 : ''
@@ -65,13 +61,14 @@ export default function MeetingForm({
           </button>
 
           <button
-            onClick={()=>
+            type="button"
+            onClick={() =>
               updateForm(
                 'meeting_type',
                 'scheduled'
               )
             }
-            className={`border p-4 rounded flex-1 ${
+            className={`border p-4 rounded flex-1 transition ${
               form.meeting_type === 'scheduled'
                 ? 'border-indigo-500'
                 : ''
@@ -79,24 +76,22 @@ export default function MeetingForm({
           >
             Schedule for Later
           </button>
-
         </div>
       </div>
 
       <div className="mt-6">
-
         <label>Meeting Privacy</label>
 
-        <div className="flex gap-4 mt-2">
-
+        <div className="flex flex-col sm:flex-row gap-4 mt-2">
           <button
-            onClick={()=>
+            type="button"
+            onClick={() =>
               updateForm(
                 'privacy',
                 'public'
               )
             }
-            className={`border p-4 rounded flex-1 ${
+            className={`border p-4 rounded flex-1 transition ${
               form.privacy === 'public'
                 ? 'border-indigo-500'
                 : ''
@@ -106,13 +101,14 @@ export default function MeetingForm({
           </button>
 
           <button
-            onClick={()=>
+            type="button"
+            onClick={() =>
               updateForm(
                 'privacy',
                 'private'
               )
             }
-            className={`border p-4 rounded flex-1 ${
+            className={`border p-4 rounded flex-1 transition ${
               form.privacy === 'private'
                 ? 'border-indigo-500'
                 : ''
@@ -120,29 +116,44 @@ export default function MeetingForm({
           >
             Private
           </button>
-
         </div>
       </div>
 
-      <div className="mt-6">
+      {form.meeting_type === 'scheduled' && (
+        <div className="mt-6">
+          <label>
+            Meeting Date & Time
+          </label>
 
+          <input
+            type="datetime-local"
+            className="w-full border p-3 rounded mt-2 text-sm sm:text-base"
+            onChange={(e) =>
+              updateForm(
+                'scheduled_at',
+                e.target.value
+              )
+            }
+          />
+        </div>
+      )}
+
+      <div className="mt-6">
         <label>
           Invite Participants
         </label>
 
         <input
-          className="w-full border p-3 rounded mt-2"
+          className="w-full border p-3 rounded mt-2 text-sm sm:text-base"
           placeholder="email1,email2"
-          onChange={(e)=>
+          onChange={(e) =>
             updateForm(
               'participants',
               e.target.value
             )
           }
         />
-
       </div>
-
     </div>
   )
 }
