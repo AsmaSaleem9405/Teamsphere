@@ -28,11 +28,7 @@ export default function Sidebar({ open, setOpen }) {
         `}
       >
         <div className="p-4">
-          <Link href="/meeting">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl transition">
-              + Start a Meeting
-            </button>
-          </Link>
+         
 
           <div className="mt-10 space-y-2">
             <SidebarItem

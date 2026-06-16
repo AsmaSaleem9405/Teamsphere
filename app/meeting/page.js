@@ -1,386 +1,380 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase/client";
 import Sidebar from "@/app/components/Sidebar";
-import MeetingSummary from "@/app/components/MeetingSummary";
+
 export default function MeetingPage() {
+  const router = useRouter();
+const [loading, setLoading] = useState(false);
+const copyLink = async () => {
+  await navigator.clipboard.writeText(
+    previewMeetingLink
+  );
+
+  alert("Meeting link copied");
+};
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [meetingLink, setMeetingLink] = useState("");
+  const [participantInput, setParticipantInput] = useState("");
 
+  const [participants, setParticipants] = useState([]);
+
+const [previewMeetingLink, setPreviewMeetingLink] =
+  useState("");
+useEffect(() => {
+  const tempId = crypto.randomUUID();
+
+  setPreviewMeetingLink(
+    `${window.location.origin}/meeting/${tempId}`
+  );
+}, []);
   const [form, setForm] = useState({
-    title: "Team Meeting",
+    title: "",
     meeting_type: "instant",
     privacy: "public",
-    participants: "",
+    scheduled_date: "",
+    scheduled_time: "",
   });
 
-  useEffect(() => {
-    setMeetingLink(
-      `${window.location.origin}/meeting/${crypto.randomUUID()}`
+ const addParticipant = () => {
+  const email = participantInput.trim();
+
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) {
+    alert("Enter valid email");
+    return;
+  }
+
+  if (participants.includes(email)) {
+    alert("Already added");
+    return;
+  }
+
+  setParticipants([
+    ...participants,
+    email,
+  ]);
+
+  setParticipantInput("");
+};
+
+  const removeParticipant = (email) => {
+    setParticipants(
+      participants.filter((item) => item !== email)
     );
-  }, []);
+  };
 
   const createMeeting = async () => {
+    if (!form.title.trim()) {
+      alert("Meeting title required");
+      return;
+    }
+
+    if (
+      form.meeting_type === "scheduled" &&
+      (!form.scheduled_date || !form.scheduled_time)
+    ) {
+      alert("Select date and time");
+      return;
+    }
+
+    setLoading(true);
+    const copyLink = async () => {
+  await navigator.clipboard.writeText(
+    previewMeetingLink
+  );
+
+  alert("Meeting link copied");
+};
+
+    const meetingId = crypto.randomUUID();
+
+const meetingLink =
+  `${window.location.origin}/meeting/${meetingId}`;
+
     const { error } = await supabase
       .from("meetings2")
       .insert([
         {
+          id: meetingId,
           title: form.title,
           meeting_type: form.meeting_type,
           privacy: form.privacy,
           meeting_link: meetingLink,
-          participants: form.participants
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean),
+          participants,
+          scheduled_date: form.scheduled_date || null,
+          scheduled_time: form.scheduled_time || null,
         },
       ]);
 
+    setLoading(false);
+
     if (error) {
-      console.log(error);
       alert(error.message);
       return;
     }
+    if (participants.length > 0) {
+  await fetch("/api/send-meeting-email", {
+    method: "POST",
 
-    alert("Meeting Created Successfully");
-  };
+    headers: {
+      "Content-Type": "application/json",
+    },
 
-  const copyLink = async () => {
-    await navigator.clipboard.writeText(meetingLink);
-    alert("Meeting Link Copied");
+    body: JSON.stringify({
+      participants,
+      title: form.title,
+      meetingLink,
+      meetingType: form.meeting_type,
+      date: form.scheduled_date,
+      time: form.scheduled_time,
+    }),
+  });
+}
+
+   if (form.meeting_type === "instant") {
+  router.push(`/meeting/${meetingId}`);
+} else {
+  alert("Meeting Scheduled Successfully");
+  router.push("/meetings");
+}
   };
 
   return (
-    <div className="flex min-h-screen text-black bg-[#F7F8FC]">
-
-      <Sidebar
+<div className="flex min-h-screen bg-slate-100 text-black">      <Sidebar
         open={sidebarOpen}
         setOpen={setSidebarOpen}
       />
 
-      <main className="flex-1 p-4 lg:p-8">
-
-        {/* Mobile Menu */}
+      <main className="flex-1 p-6 lg:p-10">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden mb-6 bg-white p-3 rounded-xl shadow"
+          className="lg:hidden mb-6"
         >
           ☰
         </button>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow p-8">
 
-          {/* LEFT SIDE */}
-          <div className="lg:col-span-2">
+          <h1 className="text-4xl font-bold text-gray-900">
+            Create Meeting
+          </h1>
 
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
+          <p className="text-gray-500 mt-2">
+            Start instantly or schedule for later
+          </p>
 
-              <h1 className="text-4xl font-bold">
-                Start a Meeting for Free
-              </h1>
+          {/* Title */}
 
-              <p className="text-gray-500 mt-2">
-                Create a new meeting and invite participants
-              </p>
+          <div className="mt-8">
+            <label className="font-medium">
+              Meeting Title
+            </label>
 
-              {/* Meeting Title */}
-              <div className="flex gap-4 mt-8">
-
-                <div className="bg-indigo-50 p-3 rounded-xl h-fit">
-                  <img
-                    src="/icons/users (1).png"
-                    alt=""
-                    className="w-5 h-5"
-                  />
-                </div>
-
-                <div className="flex-1">
-
-                  <label className="font-medium">
-                    Meeting Title
-                  </label>
-
-                  <input
-                    value={form.title}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        title: e.target.value,
-                      })
-                    }
-                    className="w-full mt-2 border rounded-xl p-3"
-                  />
-
-                </div>
-
-              </div>
-
-              {/* Meeting Type */}
-              <div className="flex gap-4 mt-8">
-
-                <div className="bg-indigo-50 p-3 rounded-xl h-fit">
-                  <img
-                    src="/icons/calendar (1).png"
-                    alt=""
-                    className="w-5 h-5"
-                  />
-                </div>
-
-                <div className="flex-1">
-
-                  <label className="font-medium">
-                    Meeting Type
-                  </label>
-
-                  <div className="grid md:grid-cols-2 gap-4 mt-3">
-
-                    <button
-  onClick={() =>
-    setForm({
-      ...form,
-      meeting_type: "instant",
-    })
-  }
-  className={`border rounded-2xl p-5 text-left w-full flex gap-3 items-start ${
-    form.meeting_type === "instant"
-      ? "border-indigo-600 bg-indigo-50"
-      : ""
-  }`}
->
-  <img
-    src="/icons/charge.png"
-    alt="Instant"
-    className="w-6 h-6 mt-1"
-  />
-
-  <div>
-    <h3 className="font-semibold">Instant Meeting</h3>
-    <p className="text-sm text-gray-500 mt-1">Start immediately</p>
-  </div>
-</button>
-<button
-  onClick={() =>
-    setForm({
-      ...form,
-      meeting_type: "scheduled",
-    })
-  }
-  className={`border rounded-2xl p-5 text-left w-full flex gap-3 items-start ${
-    form.meeting_type === "scheduled"
-      ? "border-indigo-600 bg-indigo-50"
-      : ""
-  }`}
->
-  <img
-    src="/icons/calendar.png"
-    alt="Schedule"
-    className="w-6 h-6 mt-1"
-  />
-
-  <div>
-    <h3 className="font-semibold">Schedule for Later</h3>
-    <p className="text-sm text-gray-500 mt-1">Plan ahead</p>
-  </div>
-</button>
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Privacy */}
-              <div className="flex gap-4 mt-8">
-
-                <div className="bg-indigo-50 p-3 rounded-xl h-fit">
-                  <img
-                    src="/icons/padlock.png"
-                    alt=""
-                    className="w-5 h-5"
-                  />
-                </div>
-
-                <div className="flex-1">
-
-                  <label className="font-medium">
-                    Meeting Privacy
-                  </label>
-
-                  <div className="grid md:grid-cols-2 gap-4 mt-3">
-<button
-  onClick={() =>
-    setForm({
-      ...form,
-      privacy: "public",
-    })
-  }
-  className={`border rounded-2xl p-5 text-left w-64 flex gap-3 items-start transition ${
-    form.privacy === "public"
-      ? "border-indigo-600 bg-indigo-50"
-      : ""
-  }`}
->
-  <img
-    src="/icons/www.png"
-    alt="Public"
-    className="w-6 h-6 mt-1"
-  />
-
-  <div>
-    <h3 className="font-semibold">Public Link</h3>
-    <p className="text-sm text-gray-500 mt-1">
-      Anyone with the link can join
-    </p>
-  </div>
-</button>
-
-<button
-  onClick={() =>
-    setForm({
-      ...form,
-      privacy: "private",
-    })
-  }
-  className={`border rounded-2xl p-5 text-left w-64 flex gap-3 items-start transition ${
-    form.privacy === "private"
-      ? "border-indigo-600 bg-indigo-50"
-      : ""
-  }`}
->
-  <img
-    src="/icons/padlock (1).png"
-    alt="Private"
-    className="w-6 h-6 mt-1"
-  />
-
-  <div>
-    <h3 className="font-semibold">Private Meeting</h3>
-    <p className="text-sm text-gray-500 mt-1">
-      Only invited people can join
-    </p>
-  </div>
-</button>
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Invite Participants */}
-              <div className="flex gap-4 mt-8">
-
-                <div className="bg-indigo-50 p-3 rounded-xl h-fit">
-                  <img
-                    src="/icons/group-chat.png"
-                    alt=""
-                    className="w-5 h-5"
-                  />
-                </div>
-
-                <div className="flex-1">
-
-                  <label className="font-medium">
-                    Invite Participants
-                  </label>
-
-                  <div className="flex mt-3">
-
-                    <input
-                      placeholder="Invite by email"
-                      value={form.participants}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          participants: e.target.value,
-                        })
-                      }
-                      className="flex-1 border p-3 rounded-l-xl"
-                    />
-
-                    <button className="border border-l-0 px-5 rounded-r-xl">
-                      Add
-                    </button>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Divider */}
-              <div className="my-8 flex items-center">
-
-                <div className="flex-1 h-px bg-gray-200"></div>
-
-                <span className="px-4 text-sm text-gray-500">
-                  or share meeting link
-                </span>
-
-                <div className="flex-1 h-px bg-gray-200"></div>
-
-              </div>
-
-
-              
-
-              {/* Link Box */}
-              <div className="bg-gray-50 border rounded-2xl p-2 flex justify-between items-center">
-
-                <span className="truncate text-sm">
-                  {meetingLink}
-                </span>
-
-                <button
-  onClick={copyLink}
-  className="bg-white border px-3 py-1 rounded-xl text-indigo-600 flex items-center gap-2"
->
-  <img
-    src="/icons/copy.png"
-    alt="Copy"
-    className="w-4 h-4"
-  />
-
-  Copy Link
-</button>
-
-              </div>
-
-              {/* Bottom Buttons */}
-              <div className="grid md:grid-cols-2 gap-4 mt-8">
-
-              <button
-  onClick={createMeeting}
-  className="bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-medium flex items-center justify-center gap-2"
->
-  <img src="/icons/video.png" alt="video icon" className="w-5 h-5" />
-  Start Meeting Now
-</button>
-
-<button className="border py-4 rounded-2xl font-medium flex items-center justify-center gap-2">
-  <img src="/icons/users.png" alt="invite icon" className="w-5 h-5" />
-  Invite From Contacts
-</button>
-
-              </div>
-
-            </div>
-
+            <input
+              placeholder="Enter meeting title"
+              value={form.title}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  title: e.target.value,
+                })
+              }
+              className="w-full border rounded-xl p-3 mt-2"
+            />
           </div>
 
-          {/* RIGHT SIDE */}
-          <MeetingSummary
-  form={form}
-  meetingLink={meetingLink}
-/>
+          {/* Type */}
 
-            
+          <div className="mt-8">
+            <label className="font-medium">
+              Meeting Type
+            </label>
 
+            <div className="grid md:grid-cols-2 gap-4 mt-3">
+              <button
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    meeting_type: "instant",
+                  })
+                }
+                className={`border p-5 rounded-2xl ${
+                  form.meeting_type === "instant"
+                    ? "border-indigo-600 bg-indigo-50"
+                    : ""
+                }`}
+              >
+                Instant Meeting
+              </button>
 
-    </div>
+              <button
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    meeting_type: "scheduled",
+                  })
+                }
+                className={`border p-5 rounded-2xl ${
+                  form.meeting_type === "scheduled"
+                    ? "border-indigo-600 bg-indigo-50"
+                    : ""
+                }`}
+              >
+                Schedule Meeting
+              </button>
+            </div>
+          </div>
 
+          {/* Schedule */}
+
+          {form.meeting_type === "scheduled" && (
+            <div className="grid md:grid-cols-2 gap-4 mt-6">
+              <input
+                type="date"
+                value={form.scheduled_date}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    scheduled_date: e.target.value,
+                  })
+                }
+                className="border rounded-xl p-3"
+              />
+
+              <input
+                type="time"
+                value={form.scheduled_time}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    scheduled_time: e.target.value,
+                  })
+                }
+                className="border rounded-xl p-3"
+              />
+            </div>
+          )}
+
+          {/* Privacy */}
+
+          <div className="mt-8">
+            <label className="font-medium">
+              Privacy
+            </label>
+
+            <select
+              value={form.privacy}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  privacy: e.target.value,
+                })
+              }
+              className="w-full border rounded-xl p-3 mt-2"
+            >
+              <option value="public">
+                Public
+              </option>
+
+              <option value="private">
+                Private
+              </option>
+            </select>
+          </div>
+
+          {/* Participants */}
+
+          <div className="mt-8">
+            <label className="font-medium">
+              Participants
+            </label>
+
+            <div className="flex gap-2 mt-2">
+              <input
+                value={participantInput}
+                onChange={(e) =>
+                  setParticipantInput(
+                    e.target.value
+                  )
+                }
+                placeholder="Enter email"
+                className="flex-1 border rounded-xl p-3"
+              />
+
+              <button
+                onClick={addParticipant}
+                className="bg-indigo-600 text-white px-6 rounded-xl"
+              >
+                Add
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              {participants.map((email) => (
+                <div
+                  key={email}
+                  className="bg-indigo-100 px-3 py-2 rounded-full flex gap-2"
+                >
+                  {email}
+
+                  <button
+                    onClick={() =>
+                      removeParticipant(email)
+                    }
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8">
+  <label className="font-semibold text-gray-900">
+    Meeting Link
+  </label>
+
+  <div className="flex mt-2">
+    <input
+      value={previewMeetingLink}
+      readOnly
+      className="flex-1 border rounded-l-xl p-3 bg-gray-50 text-gray-700"
+    />
+
+    <button
+      onClick={copyLink}
+      className="bg-indigo-600 text-white px-5 rounded-r-xl"
+    >
+      Copy
+    </button>
+  </div>
+
+  <p className="text-sm text-gray-500 mt-2">
+    Share this link with participants
+  </p>
+</div>
+
+          {/* Create */}
+
+          <button
+            onClick={createMeeting}
+            disabled={loading}
+            className="w-full mt-10 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl"
+          >
+            {loading
+              ? "Creating..."
+              : form.meeting_type === "instant"
+              ? "Start Meeting Now"
+              : "Schedule Meeting"}
+          </button>
+          
+        </div>
       </main>
-
     </div>
   );
 }
