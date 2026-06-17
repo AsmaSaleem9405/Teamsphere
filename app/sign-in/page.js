@@ -1,6 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
-import Image from "next/image";
+export const runtime = "edge"; // optional but improves Vercel stabilityimport Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -10,8 +10,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 export default function SignInPage() {
   const router = useRouter();
 const searchParams = useSearchParams();
+const [redirect, setRedirect] = useState("/dashboard");
 
-const redirect = searchParams.get("redirect");
+useEffect(() => {
+  const param = searchParams.get("redirect");
+  if (param) setRedirect(param);
+}, [searchParams]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -24,18 +28,22 @@ const redirect = searchParams.get("redirect");
   const [error, setError] =
     useState("");
 
- useEffect(() => {
-  const checkSession = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+useEffect(() => {
+  let mounted = true;
 
-    if (session) {
-      router.push(redirect || "/dashboard");
+  const checkSession = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    if (mounted && data?.session) {
+      router.replace(redirect || "/dashboard");
     }
   };
 
   checkSession();
+
+  return () => {
+    mounted = false;
+  };
 }, [router, redirect]);
 
   const login = async () => {
