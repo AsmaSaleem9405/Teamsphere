@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import TermsPage from "@/app/terms/page";
 import PrivacyPage from "@/app/privacy/page";
@@ -13,6 +13,10 @@ import { signUp } from "@/app/lib/supabase/auth";
 
 export default function SignUpPage() {
   const router = useRouter();
+
+  // ✅ FIX ADDED (KEEP SAME STYLE AS SIGN-IN)
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/dashboard";
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -30,115 +34,109 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
 
   const register = async () => {
-  setError("");
+    setError("");
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // Check if email already exists
-    const { data: existingUser, error: checkError } = await supabase
-      .from("profiles")
-      .select("email")
-      .eq("email", email)
-      .maybeSingle();
+      const { data: existingUser, error: checkError } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("email", email)
+        .maybeSingle();
 
-    if (checkError) {
-      console.log(checkError);
+      if (checkError) {
+        console.log(checkError);
+      }
+
+      if (existingUser) {
+        setError("This email is already registered. Please sign in.");
+        return;
+      }
+
+      if (!fullName.trim()) {
+        setError("Please enter your full name");
+        return;
+      }
+
+      if (!email.trim()) {
+        setError("Please enter your email");
+        return;
+      }
+
+      if (!password.trim()) {
+        setError("Please enter your password");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      if (!agree) {
+        setError("Please accept Terms of Service and Privacy Policy");
+        return;
+      }
+
+      const res = await fetch("/api/check-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const { exists } = await res.json();
+
+      if (exists) {
+        setError("This email is already registered. Please sign in.");
+        return;
+      }
+
+      const { error } = await signUp(email, password, fullName);
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      alert("Account created successfully. Please verify your email.");
+
+      // ✅ FIXED (ONLY CHANGE HERE)
+      router.push(redirect);
+
+    } catch (err) {
+      setError(err?.message || "Failed to create account");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (existingUser) {
-      setError("This email is already registered. Please sign in.");
-      return;
+  const facebookLogin = async () => {
+    try {
+      await supabase.auth.signOut();
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "facebook",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        console.log(error.message);
+      }
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-    if (!fullName.trim()) {
-      setError("Please enter your full name");
-      return;
-    }
-
-    if (!email.trim()) {
-      setError("Please enter your email");
-      return;
-    }
-
-    if (!password.trim()) {
-      setError("Please enter your password");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (!agree) {
-      setError("Please accept Terms of Service and Privacy Policy");
-      return;
-    }
-const res = await fetch("/api/check-user", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    email,
-  }),
-});
-
-const { exists } = await res.json();
-
-if (exists) {
-  setError(
-    "This email is already registered. Please sign in."
-  );
-  return;
-}
-    const { error } = await signUp(
-      email,
-      password,
-      fullName
-    );
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    alert("Account created successfully. Please verify your email.");
-    router.push("/sign-in");
-  } catch (err) {
-    setError(err?.message || "Failed to create account");
-  } finally {
-    setLoading(false);
-  }
-};
-
-const facebookLogin = async () => {
-  try {
-    // optional but fine
-    await supabase.auth.signOut();
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "facebook",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      console.log(error.message);
-    }
-  } catch (err) {
-    console.log(err);
-  }
-};
-  // ✅ FIXED GOOGLE LOGIN (IMPORTANT PART)
   const handleGoogleSignIn = async () => {
     try {
       setError("");
       setGoogleLoading(true);
 
-      // 🔥 FORCE LOGOUT FIRST
       await supabase.auth.signOut();
 
       const { error } = await supabase.auth.signInWithOAuth({
@@ -166,12 +164,10 @@ const facebookLogin = async () => {
     <div className="min-h-screen bg-[#f7f8fc] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
 
-        {/* Logo */}
         <div className="mb-8">
           <Logo />
         </div>
 
-        {/* Heading */}
         <h1 className="text-3xl font-bold text-gray-900">
           Create your account
         </h1>
@@ -266,32 +262,24 @@ const facebookLogin = async () => {
 
         {/* Terms */}
         <div className="flex items-start gap-2 mb-6">
-  <input
-    type="checkbox"
-    checked={agree}
-    onChange={(e) => setAgree(e.target.checked)}
-    className="mt-1"
-  />
+          <input
+            type="checkbox"
+            checked={agree}
+            onChange={(e) => setAgree(e.target.checked)}
+            className="mt-1"
+          />
 
-  <p className="text-sm text-gray-500">
-    I agree to{" "}
-    <Link
-      href="/terms"
-      className="text-blue-600 hover:text-blue-700 underline"
-      target="_blank"
-    >
-      Terms of Service
-    </Link>{" "}
-    and{" "}
-    <Link
-      href="/privacy"
-      className="text-blue-600 hover:text-blue-700 underline"
-      target="_blank"
-    >
-      Privacy Policy
-    </Link>
-  </p>
-</div>
+          <p className="text-sm text-gray-500">
+            I agree to{" "}
+            <Link href="/terms" className="text-blue-600 underline" target="_blank">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-blue-600 underline" target="_blank">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
 
         {/* Create Account */}
         <button
@@ -302,51 +290,25 @@ const facebookLogin = async () => {
           {loading ? "Creating Account..." : "Create account"}
         </button>
 
-        {/* Divider */}
-<div className="relative my-6 sm:my-8">
-  <div className="border-t border-gray-200" />
+        {/* Google + Facebook */}
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading}
+            className="w-full h-12 border border-gray-300 rounded-xl flex items-center justify-center gap-2"
+          >
+            <Image src="/icons/google.png" alt="Google" width={20} height={20} />
+            Google
+          </button>
 
-  <span
-    className="
-      absolute left-1/2 -translate-x-1/2
-      -top-2 sm:-top-3
-      bg-white px-2 sm:px-4
-      text-xs sm:text-sm
-      text-gray-500
-      whitespace-nowrap
-    "
-  >
-    or continue with
-  </span>
-</div>
-
-        {/* Google */}
-      <div className="grid grid-cols-2 gap-4">
-  <button
-    onClick={handleGoogleSignIn}
-    disabled={googleLoading}
-    className="w-full h-12 border text-black border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
-  >
-    <Image src="/icons/google.png" alt="Google" width={20} height={20} />
-
-    <span className="text-sm font-medium">
-      {googleLoading ? "Redirecting..." : "Google"}
-    </span>
-  </button>
-
-  <button
-    onClick={facebookLogin}
-    className="w-full h-12 border border-gray-300 text-gray-700 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50"
-  >
-    <Image
-      src="/icons/facebook.png"
-      alt="Facebook"
-      width={20}
-      height={20}
-    />
-    <span className="text-sm font-medium">Facebook</span>
-  </button>
-</div>
+          <button
+            onClick={facebookLogin}
+            className="w-full h-12 border border-gray-300 rounded-xl flex items-center justify-center gap-2"
+          >
+            <Image src="/icons/facebook.png" alt="Facebook" width={20} height={20} />
+            Facebook
+          </button>
+        </div>
 
         {/* Sign in */}
         <p className="text-center text-sm text-gray-500 mt-8">

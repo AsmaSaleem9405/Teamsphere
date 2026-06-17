@@ -6,11 +6,12 @@ import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { supabase } from "@/app/lib/supabase/client";
 import Logo from "@/app/components/logo";
-import { useRouter } from "next/navigation";
-
+import { useRouter, useSearchParams } from "next/navigation";
 export default function SignInPage() {
   const router = useRouter();
+const searchParams = useSearchParams();
 
+const redirect = searchParams.get("redirect");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -23,19 +24,19 @@ export default function SignInPage() {
   const [error, setError] =
     useState("");
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+ useEffect(() => {
+  const checkSession = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-      if (session) {
-        router.push("/dashboard");
-      }
-    };
+    if (session) {
+      router.push(redirect || "/dashboard");
+    }
+  };
 
-    checkSession();
-  }, [router]);
+  checkSession();
+}, [router, redirect]);
 
   const login = async () => {
   try {
@@ -73,7 +74,7 @@ export default function SignInPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(redirect || "/dashboard");
     router.refresh();
   } catch (err) {
     setError(err.message);
@@ -83,13 +84,14 @@ export default function SignInPage() {
 };
 const facebookLogin = async () => {
   try {
-    // optional but fine
     await supabase.auth.signOut();
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "facebook",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(
+          redirect || "/dashboard"
+        )}`,
       },
     });
 
@@ -102,13 +104,14 @@ const facebookLogin = async () => {
 };
 const googleLogin = async () => {
   try {
-    // 🔥 FORCE CLEAR SUPABASE SESSION FIRST
     await supabase.auth.signOut();
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(
+          redirect || "/dashboard"
+        )}`,
         queryParams: {
           prompt: "select_account consent",
           access_type: "offline",

@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase/client";
 import Sidebar from "@/app/components/Sidebar";
+import Navbar from "@/app/components/Navbar";
 
-export default function MeetingPage() {
+export default function RootLayout({ children }) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
@@ -93,10 +94,7 @@ export default function MeetingPage() {
 
     if (!user) {
       setLoading(false);
-
-      router.push(
-        "/sign-in?redirect=/meeting"
-      );
+router.push(`/sign-in?returnTo=${encodeURIComponent(window.location.pathname)}`);
 
       return;
     }
@@ -203,6 +201,10 @@ export default function MeetingPage() {
   };
 
   return (
+     <>
+      <Navbar />
+      {children}
+   
     <div className="flex min-h-screen bg-slate-100 text-black">
       <Sidebar
         open={sidebarOpen}
@@ -474,5 +476,6 @@ export default function MeetingPage() {
         </div>
       </main>
     </div>
+     </>
   );
 }

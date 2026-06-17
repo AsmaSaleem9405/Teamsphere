@@ -66,19 +66,23 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 mt-10">
               {/* Start Meeting */}
            <div className="flex flex-col gap-4">
- <Link href="/meeting">
+ 
+  <Link href="/sign-in?redirect=/meeting">
   <button className="bg-indigo-600 text-white px-6 py-3 rounded-lg">
     Start a New Meeting
   </button>
 </Link>
 
-   <Link href="/meeting">
 
-        <button className="bg-indigo-600 text-white px-8 py-4 rounded-lg">
-          Start New Meeting
-        </button>
+   
 
-      </Link>
+        <Link href="/sign-in?redirect=/meeting">
+  <button className="bg-indigo-600 text-white px-6 py-3 rounded-lg">
+    Start a New Meeting
+  </button>
+</Link>
+
+     
 </div>
             </div>
           </div>

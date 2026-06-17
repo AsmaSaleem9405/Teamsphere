@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase/client";
+import Navbar from "@/app/components/Navbar";
 
-export default function Dashboard() {
+export default function RootLayout({ children }){
   const router = useRouter();
 
   const [user, setUser] = useState(null);
@@ -44,6 +45,10 @@ export default function Dashboard() {
   }
 
   return (
+      <>
+      <Navbar />
+      {children}
+    
     <main className="min-h-screen bg-slate-100 p-10">
 
       <div className="max-w-5xl mx-auto">
@@ -98,5 +103,6 @@ export default function Dashboard() {
       </div>
 
     </main>
+    </>
   );
 }
