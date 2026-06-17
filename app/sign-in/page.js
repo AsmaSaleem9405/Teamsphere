@@ -89,7 +89,9 @@ const facebookLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "facebook",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(
+        redirectTo: `${typeof window !== "undefined"
+  ? window.location.origin
+  : ""}/auth/callback?redirect=${encodeURIComponent(
           redirect || "/dashboard"
         )}`,
       },
@@ -109,7 +111,9 @@ const googleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(
+        redirectTo: `${typeof window !== "undefined"
+  ? window.location.origin
+  : ""}/auth/callback?redirect=${encodeURIComponent(
           redirect || "/dashboard"
         )}`,
         queryParams: {
