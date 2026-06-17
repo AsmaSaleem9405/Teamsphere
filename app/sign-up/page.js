@@ -1,9 +1,11 @@
 "use client";
 export const dynamic = "force-dynamic";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import TermsPage from "@/app/terms/page";
 import PrivacyPage from "@/app/privacy/page";
@@ -15,8 +17,17 @@ export default function SignUpPage() {
   const router = useRouter();
 
   // ✅ FIX ADDED (KEEP SAME STYLE AS SIGN-IN)
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/dashboard";
+const [redirect, setRedirect] = useState("/dashboard");
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+
+    setRedirect(
+      params.get("redirect") || "/dashboard"
+    );
+  }
+}, []);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");

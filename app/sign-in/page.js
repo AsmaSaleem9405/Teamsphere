@@ -1,5 +1,8 @@
 "use client";
+
 export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -7,129 +10,135 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { supabase } from "@/app/lib/supabase/client";
 import Logo from "@/app/components/logo";
 import { useRouter, useSearchParams } from "next/navigation";
-export default function SignInPage() {
-  const router = useRouter();
-const searchParams = useSearchParams();
 
-const redirect = searchParams.get("redirect");
+export default function SignInPage() {
+ 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const redirect = searchParams.get("redirect");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [showPassword, setShowPassword] =
     useState(false);
-
   const [loading, setLoading] =
     useState(false);
+  const [error, setError] = useState("");
 
-  const [error, setError] =
-    useState("");
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
- useEffect(() => {
-  const checkSession = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      if (session) {
+        router.push(redirect || "/dashboard");
+      }
+    };
 
-    if (session) {
+    checkSession();
+  }, [router, redirect]);
+
+  const login = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const res = await fetch("/api/check-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.exists) {
+        setError(
+          "This account is not registered. Please sign up."
+        );
+        return;
+      }
+
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      if (error) {
+        setError("Incorrect password.");
+        return;
+      }
+
       router.push(redirect || "/dashboard");
+      router.refresh();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  checkSession();
-}, [router, redirect]);
+  const facebookLogin = async () => {
+    try {
+      await supabase.auth.signOut();
 
-  const login = async () => {
-  try {
-    setLoading(true);
-    setError("");
+      const { error } =
+        await supabase.auth.signInWithOAuth({
+          provider: "facebook",
+          options: {
+            redirectTo: `${
+              typeof window !== "undefined"
+                ? window.location.origin
+                : ""
+            }/auth/callback?redirect=${encodeURIComponent(
+              redirect || "/dashboard"
+            )}`,
+          },
+        });
 
-    // Check if user exists
-    const res = await fetch("/api/check-user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!data.exists) {
-      setError(
-        "This account is not registered. Please sign up."
-      );
-      return;
+      if (error) {
+        console.log(error.message);
+      }
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-    const { error } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+  const googleLogin = async () => {
+    try {
+      await supabase.auth.signOut();
 
-    if (error) {
-      setError("Incorrect password.");
-      return;
+      const { error } =
+        await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${
+              typeof window !== "undefined"
+                ? window.location.origin
+                : ""
+            }/auth/callback?redirect=${encodeURIComponent(
+              redirect || "/dashboard"
+            )}`,
+            queryParams: {
+              prompt: "select_account consent",
+              access_type: "offline",
+            },
+          },
+        });
+
+      if (error) {
+        console.log(error.message);
+      }
+    } catch (err) {
+      console.log(err);
     }
-
-    router.push(redirect || "/dashboard");
-    router.refresh();
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-const facebookLogin = async () => {
-  try {
-    await supabase.auth.signOut();
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "facebook",
-      options: {
-        redirectTo: `${typeof window !== "undefined"
-  ? window.location.origin
-  : ""}/auth/callback?redirect=${encodeURIComponent(
-          redirect || "/dashboard"
-        )}`,
-      },
-    });
-
-    if (error) {
-      console.log(error.message);
-    }
-  } catch (err) {
-    console.log(err);
-  }
-};
-const googleLogin = async () => {
-  try {
-    await supabase.auth.signOut();
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${typeof window !== "undefined"
-  ? window.location.origin
-  : ""}/auth/callback?redirect=${encodeURIComponent(
-          redirect || "/dashboard"
-        )}`,
-        queryParams: {
-          prompt: "select_account consent",
-          access_type: "offline",
-        },
-      },
-    });
-
-    if (error) {
-      console.log(error.message);
-    }
-  } catch (err) {
-    console.log(err);
-  }
-};
+  };
 
 
   return (
@@ -292,5 +301,7 @@ const googleLogin = async () => {
 
       </div>
     </div>
+    
   );
+  
 }
