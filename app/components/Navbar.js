@@ -16,41 +16,49 @@ export default function Navbar() {
   const [profile, setProfile] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  // SEARCH (debounced)
- useEffect(() => {
-  if (!user) return;
+  /* ---------------- SEARCH (DEBOUNCED) ---------------- */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      search(query);
+    }, 300);
 
-  const run = async () => {
-    // 1. try get profile
-    let { data, error } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
+    return () => clearTimeout(timer);
+  }, [query]);
 
-    // 2. if missing → create it
-    if (!data) {
-      const { data: inserted } = await supabase
+  /* ---------------- PROFILE CREATE (YOUR EXISTING LOGIC) ---------------- */
+  useEffect(() => {
+    if (!user) return;
+
+    const run = async () => {
+      let { data, error } = await supabase
         .from("user_profiles")
-        .insert({
-          id: user.id,
-          full_name: user.user_metadata?.full_name || user.email.split("@")[0],
-          avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
-          status: "Available",
-        })
-        .select()
-        .single();
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
 
-      data = inserted;
-    }
+      if (!data) {
+        const { data: inserted } = await supabase
+          .from("user_profiles")
+          .insert({
+            id: user.id,
+            full_name:
+              user.user_metadata?.full_name || user.email.split("@")[0],
+            avatar_url: `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+            status: "Available",
+          })
+          .select()
+          .single();
 
-    setProfile(data);
-  };
+        data = inserted;
+      }
 
-  run();
-}, [user]);
+      setProfile(data);
+    };
 
-  // PROFILE (LIVE + REALTIME)
+    run();
+  }, [user]);
+
+  /* ---------------- PROFILE REALTIME ---------------- */
   useEffect(() => {
     if (!user) return;
 
@@ -87,6 +95,41 @@ export default function Navbar() {
     return () => supabase.removeChannel(channel);
   }, [user]);
 
+  /* ---------------- NOTIFICATIONS (LIVE + REALTIME) ---------------- */
+  useEffect(() => {
+    if (!user) return;
+
+    const loadNotifications = async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      setNotifications(data || []);
+    };
+
+    loadNotifications();
+
+    const channel = supabase
+      .channel(`notifications-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setNotifications((prev) => [payload.new, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [user]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -100,10 +143,7 @@ export default function Navbar() {
       borderBottom: "1px solid #eee",
       background: "#fff",
     },
-    logo: {
-      fontWeight: "bold",
-      fontSize: "18px",
-    },
+
     searchBox: {
       position: "relative",
       width: "350px",
@@ -126,10 +166,7 @@ export default function Navbar() {
       zIndex: 10,
       boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
     },
-    item: {
-      padding: "8px",
-      cursor: "pointer",
-    },
+
     right: {
       display: "flex",
       gap: "18px",
@@ -155,8 +192,30 @@ export default function Navbar() {
 
   return (
     <nav style={styles.nav}>
-      {/* LEFT */}
-      <div style={styles.logo}>Acme</div>
+      {/* LEFT - TEAMSPHERE LOGO */}
+      <a
+        href="/"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          textDecoration: "none",
+          color: "#111",
+          fontWeight: "700",
+          fontSize: "20px",
+        }}
+      >
+        <img
+          src="/images/logo.png"
+          alt="TeamSphere"
+          style={{
+            width: "40px",
+            height: "40px",
+            objectFit: "contain",
+          }}
+        />
+        TeamSphere
+      </a>
 
       {/* SEARCH */}
       <div style={styles.searchBox}>
@@ -164,15 +223,26 @@ export default function Navbar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search..."
+          
           style={styles.input}
         />
 
         {query && results.length > 0 && (
           <div style={styles.dropdown}>
             {results.map((item) => (
-              <div key={item.id} style={styles.item}>
+              <a
+                key={item.id}
+                href={`/items/${item.id}`}
+                style={{
+                  display: "block",
+                  padding: "10px",
+                  textDecoration: "none",
+                  color: "#111",
+                  borderBottom: "1px solid #f3f3f3",
+                }}
+              >
                 {item.name}
-              </div>
+              </a>
             ))}
           </div>
         )}
@@ -182,8 +252,38 @@ export default function Navbar() {
       <div style={styles.right}>
         {/* NOTIFICATIONS */}
         <div style={{ position: "relative" }}>
-          <button onClick={() => setShowNotif(!showNotif)}>
-            🔔 {notifications.length}
+          <button
+            onClick={() => setShowNotif(!showNotif)}
+            style={{
+              position: "relative",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              fontSize: "20px",
+            }}
+          >
+            🔔
+
+            {notifications.length > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-5px",
+                  right: "-8px",
+                  background: "red",
+                  color: "#fff",
+                  width: "18px",
+                  height: "18px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "11px",
+                }}
+              >
+                {notifications.length}
+              </span>
+            )}
           </button>
 
           {showNotif && (
@@ -217,7 +317,6 @@ export default function Navbar() {
                 borderRadius: "10px",
               }}
             >
-              {/* AVATAR */}
               <div style={{ position: "relative" }}>
                 <img
                   src={profile?.avatar_url || "https://i.pravatar.cc/100"}
@@ -229,7 +328,6 @@ export default function Navbar() {
                   }}
                 />
 
-                {/* ONLINE DOT */}
                 <span
                   style={{
                     position: "absolute",
@@ -244,12 +342,10 @@ export default function Navbar() {
                 />
               </div>
 
-              {/* NAME */}
               <div style={{ lineHeight: 1.2 }}>
                 <div style={{ fontWeight: 600, fontSize: "14px" }}>
                   {profile?.full_name || "User"}
                 </div>
-
                 <div style={{ fontSize: "12px", color: "#666" }}>
                   {profile?.status || "Available"}
                 </div>
