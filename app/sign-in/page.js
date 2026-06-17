@@ -4,19 +4,27 @@ export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { supabase } from "@/app/lib/supabase/client";
 import Logo from "@/app/components/logo";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SignInPage() {
  
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [redirect, setRedirect] = useState(null);
 
-  const redirect = searchParams.get("redirect");
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(
+      window.location.search
+    );
+
+    setRedirect(params.get("redirect"));
+  }
+}, []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
