@@ -7,63 +7,30 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
-  const createUserProfile = async (user) => {
-    if (!user) return;
-
-    const { data: existingProfile } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (!existingProfile) {
-      await supabase.from("user_profiles").insert({
-        id: user.id,
-        email: user.email,
-        full_name:
-          user.user_metadata?.full_name ||
-          user.user_metadata?.name ||
-          user.email.split("@")[0],
-
-        avatar_url:
-          user.user_metadata?.avatar_url ||
-          user.user_metadata?.picture ||
-          `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
-
-        status: "Available",
-      });
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      const currentUser = data?.user || null;
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user || null);
+      setLoading(false);
+    };
 
-      setUser(currentUser);
+    getUser();
 
-      if (currentUser) {
-        await createUserProfile(currentUser);
-      }
-    });
-
-    const { data } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        const currentUser = session?.user || null;
-
-        setUser(currentUser);
-
-        if (currentUser) {
-          await createUserProfile(currentUser);
-        }
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
       }
     );
 
-    return () => data.subscription.unsubscribe();
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );
