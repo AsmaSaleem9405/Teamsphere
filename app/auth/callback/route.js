@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -27,9 +30,7 @@ export async function GET(request) {
   }
 
   const redirect =
-  requestUrl.searchParams.get("redirect") || "/dashboard";
+    requestUrl.searchParams.get("redirect") || "/dashboard";
 
-return NextResponse.redirect(
-  `${requestUrl.origin}${redirect}`
-);
+  return NextResponse.redirect(`${requestUrl.origin}${redirect}`);
 }
