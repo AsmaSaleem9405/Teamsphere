@@ -149,7 +149,8 @@ router.push(`/sign-in?returnTo=${encodeURIComponent(window.location.pathname)}`)
       return;
     }
 
-    if (participants.length > 0) {
+    if (participants.length > 0)
+       {
       const participantRows =
         participants.map(
           (email) => ({
@@ -161,7 +162,22 @@ router.push(`/sign-in?returnTo=${encodeURIComponent(window.location.pathname)}`)
             invitation_status:
               "pending",
           })
+          
         );
+        if (participants.length > 0) {
+  await fetch("/api/send-meeting-email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      participants,
+      title: form.title,
+      meetingLink,
+      scheduledAt,
+    }),
+  });
+}
 
       const {
         error:
