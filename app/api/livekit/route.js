@@ -4,14 +4,17 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const { roomName, participantName } =
-      body;
+    const {
+      roomName,
+      participantName,
+    } = body;
 
     const at = new AccessToken(
       process.env.LIVEKIT_API_KEY,
       process.env.LIVEKIT_API_SECRET,
       {
-        identity: participantName,
+        identity:
+          participantName,
       }
     );
 
@@ -29,9 +32,16 @@ export async function POST(req) {
       token,
     });
   } catch (err) {
+    console.log(err);
+
     return Response.json(
-      { error: err.message },
-      { status: 500 }
+      {
+        error:
+          "Failed to generate token",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
