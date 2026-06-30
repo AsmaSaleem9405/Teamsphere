@@ -13,15 +13,22 @@ export default function RootLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [participantInput, setParticipantInput] = useState("");
   const [participants, setParticipants] = useState([]);
-  const [previewMeetingLink, setPreviewMeetingLink] = useState("");
+const [meetingId, setMeetingId] =
+  useState("");
 
-  useEffect(() => {
-    const tempId = crypto.randomUUID();
+const [previewMeetingLink, setPreviewMeetingLink] =
+  useState("");
 
-    setPreviewMeetingLink(
-      `${window.location.origin}/meeting/${tempId}`
-    );
-  }, []);
+ useEffect(() => {
+  const newMeetingId =
+    crypto.randomUUID();
+
+  setMeetingId(newMeetingId);
+
+  setPreviewMeetingLink(
+    `${window.location.origin}/meeting/${newMeetingId}`
+  );
+}, []);
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(
@@ -98,9 +105,6 @@ router.push(`/sign-in?returnTo=${encodeURIComponent(window.location.pathname)}`)
 
       return;
     }
-
-    const meetingId =
-      crypto.randomUUID();
 
     const meetingLink =
       `${window.location.origin}/meeting/${meetingId}`;
