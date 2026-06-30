@@ -36,33 +36,36 @@ export default function MeetingPage() {
   useEffect(() => {
     const getToken = async () => {
       try {
-        const {
-          data: { user },
-        } =
-          await supabase.auth.getUser();
+       const {
+  data: { user },
+} =
+  await supabase.auth.getUser();
 
-        let participantName = "Guest";
+let participantName =
+  "Guest-" +
+  Math.floor(
+    Math.random() * 10000
+  );
 
 if (user?.email) {
- participantName = user.email;
+  participantName =
+    user.email;
 }
 
-        const res = await fetch(
-          "/api/livekit",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              roomName,
-              participantName:
-                user.email,
-            }),
-          }
-        );
-
+const res = await fetch(
+  "/api/livekit",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type":
+        "application/json",
+    },
+    body: JSON.stringify({
+      roomName,
+      participantName,
+    }),
+  }
+);
         const data =
           await res.json();
 
