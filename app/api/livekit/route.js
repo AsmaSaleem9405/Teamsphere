@@ -7,16 +7,30 @@ export async function POST(req) {
     const {
       roomName,
       participantName,
+      participantEmail,
     } = body;
+
+    // UNIQUE IDENTITY
+
+    const uniqueIdentity =
+      `${participantName}-${Date.now()}`;
+
+    // TOKEN
 
     const at = new AccessToken(
       process.env.LIVEKIT_API_KEY,
       process.env.LIVEKIT_API_SECRET,
       {
         identity:
+          uniqueIdentity,
+
+        // DISPLAY NAME
+        name:
           participantName,
       }
     );
+
+    // ROOM GRANTS
 
     at.addGrant({
       roomJoin: true,
@@ -24,6 +38,8 @@ export async function POST(req) {
       canPublish: true,
       canSubscribe: true,
     });
+
+    // JWT
 
     const token =
       await at.toJwt();
